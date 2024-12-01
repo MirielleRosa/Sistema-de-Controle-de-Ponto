@@ -14,5 +14,4 @@ app.use(cors({
 }));
 app.use('/api', turnRoutes);
 
-
 export default app;

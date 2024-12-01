@@ -16,7 +16,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const app_1 = __importDefault(require("./app"));
 const database_1 = __importDefault(require("./config/database"));
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
 app_1.default.listen(PORT, () => __awaiter(void 0, void 0, void 0, function* () {
     yield database_1.default.sync();
     console.log(`Server is running on port ${PORT}`);

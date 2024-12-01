@@ -1,10 +1,15 @@
 import { Router } from 'express';
-import * as turn from '../controllers/turnController';
+import { TurnService } from '../services/turnService';
+import { TurnController } from '../controllers/turnController';
 
 const router = Router();
 
-router.post('/start', turn.startTurn);  
-router.post('/end/:turnId', turn.endTurn);  
-router.get('/total/:userId', turn.getTotalWorkedHours);
+const turnService = new TurnService();
+const turnController = new TurnController(turnService);
+
+router.post('/start', turnController.startTurn);
+router.post('/end/:turnId', turnController.endTurn);
+router.get('/total/:userId', turnController.getTotalWorkedHours);
+router.get('/history/:userId', turnController.getWorkedHoursHistory);
 
 export default router;

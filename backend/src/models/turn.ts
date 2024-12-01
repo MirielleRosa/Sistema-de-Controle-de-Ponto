@@ -7,8 +7,6 @@ class Turn extends Model {
   public startTime!: Date;
   public endTime!: Date | null;
   public totalHours!: number | null;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
 }
 
 Turn.init(

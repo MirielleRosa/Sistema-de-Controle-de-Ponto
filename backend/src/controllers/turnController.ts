@@ -1,90 +1,62 @@
-import { Request, Response } from 'express';
-import { calculateTotalWorkedHours } from '../services/turnService';
-import Turn from '../models/turn';
+import { Request, Response, RequestHandler } from 'express';
+import { TurnService } from '../services/turnService';
 
-export const startTurn = async (req: Request, res: Response): Promise<void> => {
-  try {
+export class TurnController {
+  private turnService: TurnService;
+
+  constructor(turnService: TurnService) {
+    this.turnService = turnService;
+  }
+
+  public startTurn: RequestHandler = async (req: Request, res: Response): Promise<void> => {
     const { userId } = req.body;
 
-    if (!userId) {
-      res.status(400).json({ error: 'userId é obrigatório' });
-      return;
+    try {
+      const turn = await this.turnService.startTurn(userId);
+      res.status(201).json(turn);
+    } catch (error) {
+      res.status(500).json({ error: 'Erro ao iniciar o turno' });
     }
+  };
 
-    const turn = await Turn.create({ 
-      userId, 
-      startTime: new Date(), 
-      endTime: null 
-    });
-
-    res.status(201).json(turn);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Erro ao iniciar o turno' });
-  }
-};
-
-export const endTurn = async (req: Request, res: Response): Promise<void> => {
-  try {
+  public endTurn: RequestHandler = async (req: Request, res: Response): Promise<void> => {
     const { turnId } = req.params;
 
-    const id = parseInt(turnId, 10);
-    if (isNaN(id)) {
-      res.status(400).json({ error: 'ID do turno inválido' });
-      return;
+    try {
+      const updatedTurn = await this.turnService.endTurn(Number(turnId));
+      res.status(200).json(updatedTurn);
+    } catch (error) {
+      res.status(500).json({ error: error });
     }
+  };
 
-    const turn = await Turn.findByPk(id);
-
-    if (!turn) {
-      res.status(404).json({ error: 'Turno não encontrado' });
-      return;
-    }
-
-    if (!(turn.startTime instanceof Date)) {
-      res.status(500).json({ error: 'startTime inválido' });
-      return;
-    }
-
-    turn.endTime = new Date();
-
-    const diffInMs = turn.endTime.getTime() - turn.startTime.getTime();
-    turn.totalHours = diffInMs / 3600000;  
-
-    await turn.save();
-    res.status(200).json(turn);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Erro ao finalizar o turno' });
-  }
-};
-
-export const getTotalWorkedHours = async (req: Request, res: Response): Promise<void> => {
-  try {
+  public getTotalWorkedHours: RequestHandler = async (req: Request, res: Response): Promise<void> => {
     const { userId } = req.params;
 
-    if (!userId) {
-      res.status(400).json({ error: 'userId é obrigatório' });
-      return;
+    try {
+      let totalHours = await this.turnService.getTotalWorkedHours(Number(userId));
+
+      if (totalHours === null || totalHours === undefined) {
+        totalHours = 0;
+      }
+
+      res.status(200).json({ totalHours, message: totalHours === 0 ? 'Nenhuma hora registrada para este usuário.' : '' });
+    } catch (error) {
+      console.error('Erro ao carregar total de horas:', error);
+      res.status(500).json({ error: 'Erro ao carregar total de horas trabalhadas.' });
     }
+  };
 
-    const turns = await Turn.findAll({ where: { userId } });
+  public getWorkedHoursHistory: RequestHandler = async (req: Request, res: Response): Promise<void> => {
+    const { userId } = req.params;
 
-    if (!turns.length) {
-      res.status(404).json({ error: 'Nenhum turno encontrado para este usuário' });
-      return;
+    try {
+      const history = await this.turnService.getWorkedHoursHistory(Number(userId));
+
+      res.status(200).json(history);
+    } catch (error) {
+      console.error('Erro ao carregar histórico de horas:', error);
+      res.status(500).json({ error: 'Erro ao carregar histórico de horas trabalhadas.' });
     }
-
-    const totalHours = await calculateTotalWorkedHours(parseInt(userId, 10));
-    res.json({ totalHours });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Erro ao calcular total de horas' });
-  }
-};
-
-export default {
-  startTurn,
-  endTurn,
-  getTotalWorkedHours
-};
+  };
+}
