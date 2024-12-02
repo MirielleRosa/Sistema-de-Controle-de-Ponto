@@ -1,74 +1,69 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Row, Col, Alert } from 'react-bootstrap';
-import { startTurn, endTurn, getTotalWorkedHours, getWorkedHoursHistory } from '../services/api';
-import TimeDisplay from '../components/TimeDisplay';
-import TurnButton from '../components/TurnButton';
-import HistoryTable from '../components/HistoryTable';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { Row, Col, Alert, Container } from "react-bootstrap";
+import {
+  startTurn,
+  endTurn,
+  getTotalWorkedHours,
+  getWorkedHoursHistory,
+} from "../services/api";
+import TimeDisplay from "../components/TimeDisplay";
+import TurnButton from "../components/TurnButton";
+import CustomNavbar from "../components/Navbar";
+import Sidebar from "../components/Sidebar";
 
 const Dashboard: React.FC = () => {
   const { userId } = useParams();
-  const [turnId, setTurnId] = useState<number | null>(null); 
-  const [totalHours, setTotalHours] = useState<number | null>(null);  
-  const [loading, setLoading] = useState<boolean>(false);
+  const [turnId, setTurnId] = useState<number | null>(null);
+  const [totalHours, setTotalHours] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
-  const [startTime, setStartTime] = useState<number | null>(null); 
-  const [elapsedTime, setElapsedTime] = useState<number>(0); 
-  const [history, setHistory] = useState<{ date: string, totalTime: number }[]>([]);
+  const [startTime, setStartTime] = useState<number | null>(null);
+  const [elapsedTime, setElapsedTime] = useState<number>(0);
 
   useEffect(() => {
-    if (userId) {
-      getTotalWorkedHours(Number(userId))
-        .then(response => {
-          const totalHours = response.data.totalHours;
-          if (totalHours === 0) {
-            setTotalHours(0);
-            setElapsedTime(0);
-          } else {
-            const totalSecs = totalHours * 3600;
-            setTotalHours(totalHours);
-            setElapsedTime(totalSecs);
-            setError('');
-          }
-        })
-        .catch(() => {
-          setError('Erro ao carregar total de horas trabalhadas.');
-        });
+    const savedStartTime = localStorage.getItem("startTime");
+    const savedTurnId = localStorage.getItem("turnId");
 
-      getWorkedHoursHistory(Number(userId))
-        .then(response => {
-          setHistory(response.data);
-        })
-        .catch(() => {
-          setError('Erro ao carregar histórico de horas trabalhadas.');
-        });
-    }
+    const fetchData = async () => {
+      try {
+        const [totalHoursResponse] = await Promise.all([
+          getTotalWorkedHours(Number(userId)),
+          getWorkedHoursHistory(Number(userId)),
+        ]);
+
+        const totalHours = totalHoursResponse.data.totalHours;
+        setTotalHours(totalHours);
+
+        const now = Date.now();
+
+        if (savedStartTime && savedTurnId) {
+          const restoredStartTime = Number(savedStartTime);
+          const elapsed = Math.floor((now - restoredStartTime) / 1000);
+
+          setStartTime(restoredStartTime);
+          setTurnId(Number(savedTurnId));
+          setElapsedTime(totalHours * 3600 + elapsed);
+        } else {
+          setElapsedTime(totalHours * 3600);
+        }
+
+        setError(null);
+      } catch {
+        setError("Erro ao carregar dados.");
+      }
+    };
+    fetchData();
   }, [userId]);
 
   useEffect(() => {
-    const resetAtMidnight = () => {
-      const now = new Date();
-      const nextMidnight = new Date();
-      nextMidnight.setHours(24, 0, 0, 0);
-
-      const timeUntilMidnight = nextMidnight.getTime() - now.getTime();
-      
-      setTimeout(() => {
-        setElapsedTime(0);
-        setStartTime(null);
-        setTotalHours(0);
-      }, timeUntilMidnight);
-    };
-
-    resetAtMidnight();
-  }, []);
-
-  useEffect(() => {
     let interval: NodeJS.Timeout;
+
     if (startTime) {
       interval = setInterval(() => {
-        setElapsedTime(Math.floor((Date.now() - startTime) / 1000) + (totalHours || 0) * 3600); 
+        const now = Date.now();
+        setElapsedTime(
+          totalHours * 3600 + Math.floor((now - startTime) / 1000)
+        );
       }, 1000);
     }
 
@@ -77,56 +72,81 @@ const Dashboard: React.FC = () => {
 
   const handleStartTurn = async () => {
     if (userId) {
-      setLoading(true);
       try {
         const response = await startTurn(Number(userId));
+        const now = Date.now();
+
         setTurnId(response.data.id);
-        setStartTime(Date.now());
+        setStartTime(now);
+        updateLocalStorage("startTime", String(now));
+        updateLocalStorage("turnId", String(response.data.id));
         setError(null);
       } catch {
-        setError('Erro ao iniciar o turno.');
-      } finally {
-        setLoading(false);
+        setError("Erro ao iniciar o turno.");
       }
     }
   };
 
   const handleEndTurn = async () => {
     if (turnId) {
-      setLoading(true);
       try {
+        const now = Date.now();
+        const totalElapsedTime = Math.floor((now - (startTime || now)) / 1000);
+
         await endTurn(turnId);
+
+        setElapsedTime(totalElapsedTime + totalHours * 3600);
+        setTotalHours((prev) => prev + totalElapsedTime / 3600);
         setTurnId(null);
         setStartTime(null);
+
+        updateLocalStorage("startTime", null);
+        updateLocalStorage("turnId", null);
+
         setError(null);
       } catch {
-        setError('Erro ao finalizar o turno.');
-      } finally {
-        setLoading(false);
+        setError("Erro ao finalizar o turno.");
       }
     }
   };
 
+  const updateLocalStorage = (key: string, value: string | null) => {
+    if (value) {
+      localStorage.setItem(key, value);
+    } else {
+      localStorage.removeItem(key);
+    }
+  };
+
   return (
-    <Row className="justify-content-md-center">
-      <Col md={6} className="shadow p-4">
-        <h1 className="text-center mb-4">Dashboard - Controle de Ponto</h1>
-
-        {error && <Alert variant="danger">{error}</Alert>}
-
-        <TimeDisplay elapsedTime={elapsedTime} />
-        
-        <div className="d-flex justify-content-between mt-3">
-          <TurnButton
-            turnId={turnId}
-            handleStartTurn={handleStartTurn}
-            handleEndTurn={handleEndTurn}
-            loading={loading}
-          />
+    <Row className="g-0">
+      <div className="d-block d-md-none">
+        <CustomNavbar />
+      </div>
+      <Col sm={12} md={2}>
+        <div className="d-none d-md-block">
+          <Sidebar />
         </div>
-
-        <h4 className="mt-4">Histórico de Horas Trabalhadas</h4>
-        <HistoryTable history={history} />
+      </Col>
+      <Col sm={12} md={10} className="p-4 d-flex justify-content-center">
+        <Container>
+          {error && <Alert variant="danger">{error}</Alert>}
+          <Row className="d-flex align-items-start">
+            <h2 className="display-2 text-center text-md-start text-xl-start text-lg-start">
+              Relógio de Ponto
+            </h2>
+            <Col className="mx-auto mt-4">
+              <TimeDisplay elapsedTime={elapsedTime} />
+              <div className="d-flex justify-content-center align-items-center mt-3">
+                <TurnButton
+                  turnId={turnId}
+                  handleStartTurn={handleStartTurn}
+                  handleEndTurn={handleEndTurn}
+                />
+              </div>
+            </Col>
+          </Row>
+        </Container>
       </Col>
     </Row>
   );

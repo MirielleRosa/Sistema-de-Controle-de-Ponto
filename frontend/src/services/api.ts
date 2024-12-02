@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8080/api', // Defina a URL diretamente
+  baseURL: 'http://localhost:8080/api', 
   withCredentials: false,
   headers: {
     'Content-Type': 'application/json',
@@ -22,6 +22,10 @@ export const getTotalWorkedHours = async (userId: number) => {
 
 export const getWorkedHoursHistory = async (userId: number) => {
   return await api.get(`/history/${userId}`);
+};
+
+export const getDetailsByDate = async (userId: number, date: string) => {
+  return await api.get(`/turn-details/${userId}/${date}`);
 };
 
 export default api;

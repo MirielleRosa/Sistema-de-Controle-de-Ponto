@@ -2,7 +2,7 @@ services:
   app:
     build: .
     ports:
-      - '5173:5173'  # Mapeando a porta 5173
+      - '5173:5173'  
     environment:
       REACT_APP_API_URL: http://localhost:8080
       NODE_ENV: production

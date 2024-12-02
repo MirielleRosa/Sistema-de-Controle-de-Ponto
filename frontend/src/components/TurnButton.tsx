@@ -1,29 +1,28 @@
 import React from 'react';
-import { Button, Spinner } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 
 interface TurnButtonProps {
   turnId: number | null;
   handleStartTurn: () => void;
   handleEndTurn: () => void;
-  loading: boolean;
 }
 
-const TurnButton: React.FC<TurnButtonProps> = ({ turnId, handleStartTurn, handleEndTurn, loading }) => {
+const TurnButton: React.FC<TurnButtonProps> = ({ turnId, handleStartTurn, handleEndTurn }) => {
   return turnId ? (
     <Button
       variant="danger"
+      className='bg-secondary w-50'
       onClick={handleEndTurn}
-      disabled={loading}
-    >
-      {loading ? <Spinner animation="border" size="sm" /> : 'Finalizar Turno'}
+      style={{ border: 'none' }}
+    >Hora de Saída
     </Button>
   ) : (
     <Button
       variant="success"
+      className="bg-secondary w-50"
       onClick={handleStartTurn}
-      disabled={loading}
-    >
-      {loading ? <Spinner animation="border" size="sm" /> : 'Iniciar Turno'}
+      style={{ border: 'none' }}
+    >Hora de entrada
     </Button>
   );
 };
