@@ -11,5 +11,6 @@ router.post('/start', turnController.startTurn);
 router.post('/end/:turnId', turnController.endTurn);
 router.get('/total/:userId', turnController.getTotalWorkedHours);
 router.get('/history/:userId', turnController.getWorkedHoursHistory);
+router.get('/turn-details/:userId/:date', turnController.getTurnDetailsByDate);
 
 export default router;

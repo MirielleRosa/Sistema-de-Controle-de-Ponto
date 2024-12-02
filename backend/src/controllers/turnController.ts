@@ -59,4 +59,15 @@ export class TurnController {
       res.status(500).json({ error: 'Erro ao carregar histórico de horas trabalhadas.' });
     }
   };
+
+  public getTurnDetailsByDate: RequestHandler = async (req: Request, res: Response): Promise<void> => {
+    const { userId, date } = req.params;
+
+    try {
+      const turnDetails = await this.turnService.getTurnDetailsByDate(Number(userId), date);
+      res.status(200).json(turnDetails);
+    } catch (error) {
+      res.status(500).json({ error: 'Erro ao carregar detalhes dos turnos.' });
+    }
+  };
 }

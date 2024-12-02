@@ -36,11 +36,14 @@ export class TurnService {
     const startOfDay = new Date(today.setHours(0, 0, 0, 0));
     const endOfDay = new Date(today.setHours(23, 59, 59, 999));
 
+    const startTime = startOfDay.toISOString();
+    const endTime = endOfDay.toISOString();
+
     const turns = await Turn.findAll({
       where: {
         userId,
-        startTime: { [Op.gte]: startOfDay },
-        endTime: { [Op.lte]: endOfDay }
+        startTime: { [Op.gte]: startTime },
+        endTime: { [Op.lte]: endTime }
       }
     });
 
@@ -48,15 +51,20 @@ export class TurnService {
       return 0;
     }
 
-    const totalHours = turns.reduce((acc, turn) => {
-      if (turn.endTime) {
+    const totalMilliseconds = turns.reduce((acc, turn) => {
+      if (turn.endTime && turn.startTime) {
         const diffInMs = turn.endTime.getTime() - turn.startTime.getTime();
+
+        if (diffInMs < 0) return acc;
+
         return acc + diffInMs;
       }
       return acc;
     }, 0);
 
-    return totalHours / 3600000;
+    const totalHours = totalMilliseconds / 3600000;
+
+    return totalHours > 0 ? totalHours : 0;
   }
 
   public async getWorkedHoursHistory(userId: number) {
@@ -115,5 +123,41 @@ export class TurnService {
     totalHours %= 24;
 
     return `${String(totalHours).padStart(2, '0')}:${String(totalMinutes).padStart(2, '0')}:${String(totalSeconds).padStart(2, '0')}`;
+  }
+
+  public async getTurnDetailsByDate(userId: number, date: string) {
+    console.log('UserID:', userId, 'Date:', date);
+
+    const startOfDay = new Date(date.replace(/-/g, '/'));
+    const endOfDay = new Date(date.replace(/-/g, '/'));
+    startOfDay.setHours(0, 0, 0, 0);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const turns = await Turn.findAll({
+      where: {
+        userId,
+        startTime: { [Op.gte]: startOfDay },
+        endTime: { [Op.lte]: endOfDay }
+      }
+    });
+
+    const formattedTurns = turns.map((turn) => {
+      const startTime = turn.startTime.toISOString().substring(11, 16);
+      const endTime = turn.endTime ? turn.endTime.toISOString().substring(11, 16) : 'N/A';
+
+      const diffInMs = turn.endTime ? turn.endTime.getTime() - turn.startTime.getTime() : 0;
+      const totalSeconds = diffInMs / 1000;
+      const totalHours = Math.floor(totalSeconds / 3600);
+      const totalMinutes = Math.floor((totalSeconds % 3600) / 60);
+      const totalTime = `${String(totalHours).padStart(2, '0')}:${String(totalMinutes).padStart(2, '0')}`;
+
+      return {
+        startTime,
+        endTime,
+        totalTime
+      };
+    });
+
+    return formattedTurns;
   }
 }
