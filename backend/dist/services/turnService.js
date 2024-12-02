@@ -45,44 +45,34 @@ class TurnService {
     }
     getTotalWorkedHours(userId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const timeZone = 'America/Sao_Paulo'; // Fuso horário de Brasília
-            // Obtém a data e hora de Brasília
             const today = new Date();
-            const zonedToday = (0, date_fns_tz_1.toZonedTime)(today, timeZone); // Converte para o fuso horário de São Paulo (Brasil)
-            // Cria novos objetos para o início e fim do dia no fuso horário de Brasília
-            const startOfDay = new Date(zonedToday.getFullYear(), zonedToday.getMonth(), zonedToday.getDate(), 0, 0, 0, 0);
-            const endOfDay = new Date(zonedToday.getFullYear(), zonedToday.getMonth(), zonedToday.getDate(), 23, 59, 59, 999);
-            // Buscar turnos dentro do intervalo do dia atual em UTC
+            const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+            const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+            const startTime = startOfDay.toISOString();
+            const endTime = endOfDay.toISOString();
             const turns = yield turn_1.default.findAll({
                 where: {
                     userId,
-                    startTime: { [sequelize_1.Op.gte]: startOfDay }, // Filtro pelo início do dia
-                    endTime: { [sequelize_1.Op.lte]: endOfDay } // Filtro pelo fim do dia
+                    startTime: { [sequelize_1.Op.gte]: startTime },
+                    endTime: { [sequelize_1.Op.lte]: endTime }
                 }
             });
-            // Se não houver turnos registrados, retorna 0
             if (!turns.length) {
                 return 0;
             }
-            console.log("turns.length", turns.length);
-            // Somar o total de horas
             const totalMilliseconds = turns.reduce((acc, turn) => {
                 if (turn.endTime && turn.startTime) {
                     const diffInMs = turn.endTime.getTime() - turn.startTime.getTime();
-                    // Se a diferença for negativa (erro de horário), ignora o turno
                     if (diffInMs < 0)
                         return acc;
                     return acc + diffInMs;
                 }
                 return acc;
             }, 0);
-            // Converte de milissegundos para horas
             const totalHours = totalMilliseconds / 3600000;
-            // Retorna o total de horas, se for maior que 0
             return totalHours > 0 ? totalHours : 0;
         });
     }
-    /////////////////////
     getWorkedHoursHistory(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             const today = new Date();

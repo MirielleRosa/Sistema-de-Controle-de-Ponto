@@ -119,12 +119,12 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <Row className="g-0">
-      <div className="d-block d-md-none">
+    <Row className="g-0 ">
+      <div className="d-block d-md-none ">
         <CustomNavbar />
       </div>
       <Col sm={12} md={2}>
-        <div className="d-none d-md-block">
+        <div className="d-none d-md-block bg-dark ">
           <Sidebar />
         </div>
       </Col>

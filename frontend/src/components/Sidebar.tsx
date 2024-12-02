@@ -2,8 +2,8 @@ import React from "react";
 import { Col } from "react-bootstrap";
 import { CiLogin } from "react-icons/ci";
 import { BsHouse } from "react-icons/bs";
-import { GoGear } from "react-icons/go";
 import { useNavigate, useLocation, useParams, Link } from "react-router-dom";
+import { BsTable } from "react-icons/bs";
 
 const Sidebar: React.FC = () => {
     const navigate = useNavigate();
@@ -18,7 +18,10 @@ const Sidebar: React.FC = () => {
     const isHistorico = location.pathname === `/history/${userId}`;
 
     return (
-        <Col className="bg-dark text-white vh-100 d-flex flex-column justify-content-between">
+        <Col 
+        className="bg-dark text-white d-flex flex-column justify-content-between"
+        style={{ minHeight: '880px', height: '100vh' }}
+        >
             <div className="d-flex flex-column justify-content-center align-items-center mt-5">
                 <div className="mb-4">
                     <img
@@ -49,7 +52,7 @@ const Sidebar: React.FC = () => {
                         className={`nav-link text-white d-flex justify-content-center align-items-center w-100 ${
                             isHistorico ? "bg-dark-gradiant" : ""
                         }`}>
-                        <GoGear className="m-1 fs-4" />
+                        <BsTable   className="m-1 fs-5" />
                         <span className="d-none d-md-inline">Histórico</span>
                     </Link>
                 </li>

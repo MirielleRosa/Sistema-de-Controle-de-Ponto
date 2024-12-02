@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -113,6 +114,17 @@
   font-weight: bold;
 }
 
+.history-table {
+  font-family: 'Roboto', sans-serif;
+}
+
+.modal-dialog {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
 a {
   font-weight: 500;
   color: #646cff;
@@ -171,4 +183,8 @@ button:focus-visible {
 .table-responsive::-webkit-scrollbar-track {
   background: #f1f1f1;
   border-radius: 10px;
+}
+
+.h-100{
+  height: 100%;
 }

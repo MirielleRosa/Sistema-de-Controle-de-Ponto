@@ -8,7 +8,7 @@ import CustomNavbar from '../components/Navbar';
 
 const HistoryPage: React.FC = () => {
   const { userId } = useParams();
-  const [history, setHistory] = useState<{ date: string; totalTime: number }[]>([]);
+  const [history, setHistory] = useState<{ date: string; totalTime: string }[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [modalShow, setModalShow] = useState(false);
   const [details, setDetails] = useState<{ startTime: string; endTime: string; totalTime: string }[]>([]);

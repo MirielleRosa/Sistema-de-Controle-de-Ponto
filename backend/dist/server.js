@@ -19,5 +19,5 @@ const database_1 = __importDefault(require("./config/database"));
 const PORT = process.env.PORT;
 app_1.default.listen(PORT, () => __awaiter(void 0, void 0, void 0, function* () {
     yield database_1.default.sync();
-    console.log(`Server is running on port ${PORT}`);
+    console.log(`Server: ${PORT}`);
 }));
