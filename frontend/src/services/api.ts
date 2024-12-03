@@ -13,9 +13,10 @@ export const startTurn = async (userId: string) => {
   return await api.post('/start', { userId });
 };
 
-export const endTurn = async (turnId: string) => {
+export const endTurn = async (turnId: number) => { 
   return await api.post(`/end/${turnId}`);
 };
+
 
 export const getTotalWorkedHours = async (userId: string) => {
   return await api.get(`/total/${userId}`);

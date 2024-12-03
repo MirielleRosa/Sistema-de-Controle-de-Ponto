@@ -89,6 +89,8 @@ const Dashboard: React.FC = () => {
   }, [startTime, totalHours]);
 
   const handleStartTurn = async () => {
+    if (!userId) return; 
+
    try {
     const response = await startTurn(userId);
 
@@ -119,7 +121,7 @@ const handleEndTurn = async () => {
       const now = Date.now();
       const totalElapsedTime = Math.floor((now - (startTime || now)) / 1000);
   
-      await endTurn(String(turnId)); 
+      await endTurn(turnId); 
       setElapsedTime(totalElapsedTime + totalHours * 3600);
       setTotalHours((prev) => prev + totalElapsedTime / 3600);
       setTurnId(null);
