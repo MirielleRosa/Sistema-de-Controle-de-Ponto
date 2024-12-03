@@ -40,6 +40,8 @@ const Dashboard: React.FC = () => {
       const totalHours = totalHoursResponse.data.totalHours;
       setTotalHours(totalHours);
 
+      console.log("totalHours", totalHours)
+
       const now = Date.now();
 
       if (localStorage.getItem("startTime") && localStorage.getItem("turnId")) {

@@ -52,12 +52,11 @@ class TurnService {
             today.setHours(0, 0, 0, 0);
             const userTurns = yield turn_1.default.findAll({
                 where: {
-                    userId,
-                    endTime: { [sequelize_1.Op.ne]: null },
+                    userId: userId,
+                    endTime: { [sequelize_1.Op.ne]: today },
                     startTime: { [sequelize_1.Op.gte]: today },
                 },
             });
-            console.log(userTurns);
             const totalMilliseconds = userTurns.reduce((acc, turn) => {
                 const diffInMs = this.calculateTimeDiff(turn.startTime, turn.endTime);
                 return acc + diffInMs;
@@ -97,7 +96,7 @@ class TurnService {
             endOfDay.setUTCHours(23, 59, 59, 999);
             const turns = yield turn_1.default.findAll({
                 where: {
-                    userId,
+                    userId: userId,
                     startTime: { [sequelize_1.Op.gte]: startOfDay },
                     endTime: { [sequelize_1.Op.lte]: endOfDay },
                 },

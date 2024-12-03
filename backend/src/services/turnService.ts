@@ -37,29 +37,40 @@ export class TurnService {
   }
 
   async getTotalWorkedHours(userId: string): Promise<number> {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+      const today = new Date();
+      const startOfToday = new Date(today.setHours(0, 0, 0, 0));
+      const endOfToday = new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000 - 1); 
 
-    console.log("user id service", userId)
+      const userTurns = await Turn.findAll({
+          where: {
+              userId: userId,
+              [Op.and]: [
+                  {
+                      startTime: { [Op.gte]: startOfToday },
+                  },
+                  {
+                      [Op.or]: [
+                          { endTime: { [Op.lte]: endOfToday } },
+                          { endTime: null },
+                      ],
+                  },
+              ],
+          },
+      });
 
-    const userTurns = await Turn.findAll({
-      where: {
-        userId: userId, 
-        endTime: { [Op.ne]: null },
-        startTime: { [Op.gte]: today },
-      },
-    });
+      const totalMilliseconds = userTurns.reduce((acc, turn) => {
+          const diffInMs = this.calculateTimeDiff(
+              turn.startTime,
+              turn.endTime || new Date()
+          );
+          return acc + diffInMs;
+      }, 0);
 
-    console.log(userTurns)
+      const totalDays = totalMilliseconds / (24 * 60 * 60 * 1000);
 
-    const totalMilliseconds = userTurns.reduce((acc, turn) => {
-      const diffInMs = this.calculateTimeDiff(turn.startTime, turn.endTime!);
-      return acc + diffInMs;
-    }, 0);
-
-    return totalMilliseconds;
+      return totalDays;
   }
-  
+
   async getWorkedHoursHistory(userId: string): Promise<{ date: string; totalTime: string }[]> {
     const history: { [date: string]: number } = {};
   

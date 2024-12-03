@@ -58,7 +58,7 @@ const LoginPage: React.FC = () => {
                   type="text"
                   value={userId}
                   onChange={(e) => handleInputChange(e.target.value)}
-                  placeholder="Digite apenas números"
+                  placeholder="123456"
                   required
                   className="custom-placeholder"
                 />

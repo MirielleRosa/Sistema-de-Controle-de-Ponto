@@ -34,12 +34,13 @@ class TurnController {
         });
         this.getTotalWorkedHours = (_a, res_1) => __awaiter(this, [_a, res_1], void 0, function* ({ params: { userId } }, res) {
             try {
+                console.log("userId controller", userId);
                 let totalHours = yield this.turnService.getTotalWorkedHours(userId);
                 totalHours = totalHours !== null && totalHours !== void 0 ? totalHours : 0;
-                this.handleTotalHoursResponse(res, totalHours);
+                res.status(200).json({ totalHours });
             }
             catch (error) {
-                this.handleError(res, 'Erro ao carregar total de horas trabalhadas', error);
+                res.status(500).json({ error: 'Erro ao carregar total de horas trabalhadas' });
             }
         });
         this.getWorkedHoursHistory = (_a, res_1) => __awaiter(this, [_a, res_1], void 0, function* ({ params: { userId } }, res) {
