@@ -1,5 +1,5 @@
 import Turn from '../models/turn'; 
-import { Op } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 import { Turn as TurnInterface } from '../interfaces/Turn';
 
 export class TurnService {
@@ -42,7 +42,7 @@ export class TurnService {
 
     const userTurns = await Turn.findAll({
       where: {
-        userId,
+        userId: Sequelize.cast(userId, 'VARCHAR'), // Garantir que userId seja tratado como string
         endTime: { [Op.ne]: null },
         startTime: { [Op.gte]: today },
       },
