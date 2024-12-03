@@ -5,7 +5,7 @@ import { Turn as TurnInterface } from '../interfaces/Turn';
 
 class Turn extends Model<TurnInterface> implements TurnInterface {
   public id!: number;
-  public userId!: number;
+  public userId!: string;
   public startTime!: Date;
   public endTime!: Date | null;
   public totalHours!: number | null;
@@ -14,7 +14,7 @@ class Turn extends Model<TurnInterface> implements TurnInterface {
 Turn.init(
   {
     userId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
       allowNull: false,
     },
     startTime: {

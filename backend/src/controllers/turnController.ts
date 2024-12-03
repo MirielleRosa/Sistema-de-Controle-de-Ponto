@@ -45,7 +45,7 @@ export class TurnController {
 
   public getTotalWorkedHours: RequestHandler = async ({ params: { userId } }: Request, res: Response): Promise<void> => {
     try {
-      let totalHours = await this.turnService.getTotalWorkedHours(Number(userId));
+      let totalHours = await this.turnService.getTotalWorkedHours(userId);
 
       totalHours = totalHours ?? 0; 
 
@@ -57,7 +57,7 @@ export class TurnController {
 
   public getWorkedHoursHistory: RequestHandler = async ({ params: { userId } }: Request, res: Response): Promise<void> => {
     try {
-      const history = await this.turnService.getWorkedHoursHistory(Number(userId));
+      const history = await this.turnService.getWorkedHoursHistory(userId);
       res.status(200).json(history);
     } catch (error) {
       this.handleError(res, 'Erro ao carregar histórico de horas trabalhadas', error);
@@ -76,7 +76,7 @@ export class TurnController {
   
   public getTurnDetailsByDate: RequestHandler = async ({ params: { userId, date } }: Request, res: Response): Promise<void> => {
     try {
-      const turnDetails = await this.turnService.getTurnDetailsByDate(Number(userId), date);
+      const turnDetails = await this.turnService.getTurnDetailsByDate(userId, date);
       res.status(200).json(turnDetails);
     } catch (error) {
       this.handleError(res, 'Erro ao carregar detalhes dos turnos', error);
@@ -91,7 +91,7 @@ export class TurnController {
     const { userId } = req.params;
   
     try {
-      const today = await this.turnService.getWorkedHoursToday(Number(userId));
+      const today = await this.turnService.getWorkedHoursToday(userId);
   
       res.status(200).json(today);
     } catch (error) {

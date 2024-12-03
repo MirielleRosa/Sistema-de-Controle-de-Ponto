@@ -14,7 +14,11 @@ export interface WorkedHours {
 }
 
 export interface WorkedHoursTableProps {
-  data: WorkedHours[];
+  workedHoursToday: {
+    startTime: string; // Ajuste o tipo conforme necessário (string, Date, etc.)
+    endTime: string | null;
+    startDate: string; // Data da entrada
+  }[];
 }
 
 export interface HistoryEntry {

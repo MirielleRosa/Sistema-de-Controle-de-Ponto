@@ -3,7 +3,7 @@ import { Col } from "react-bootstrap";
 import { CiLogin } from "react-icons/ci";
 import { BsHouse } from "react-icons/bs";
 import { useNavigate, useLocation, useParams, Link } from "react-router-dom";
-import { BsTable } from "react-icons/bs";
+import { CiCalendar } from "react-icons/ci";
 
 const Sidebar: React.FC = () => {
     const navigate = useNavigate();
@@ -52,7 +52,7 @@ const Sidebar: React.FC = () => {
                         className={`nav-link text-white d-flex justify-content-center align-items-center w-100 ${
                             isHistorico ? "bg-dark-gradiant" : ""
                         }`}>
-                        <BsTable   className="m-1 fs-5" />
+                        <CiCalendar    className="m-1 fs-4" />
                         <span className="d-none d-md-inline">Histórico</span>
                     </Link>
                 </li>

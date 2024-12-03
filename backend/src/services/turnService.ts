@@ -7,7 +7,7 @@ export class TurnService {
     return (endTime.getTime() - startTime.getTime()) / 3600000; // Retorna em horas
   }
 
-  public async startTurn(userId: number) {
+  public async startTurn(userId: string) {
     const turn = await Turn.create({
       userId,
       startTime: new Date(),
@@ -36,7 +36,7 @@ export class TurnService {
     return turn;
   }
 
-  async getTotalWorkedHours(userId: number): Promise<number> {
+  async getTotalWorkedHours(userId: string): Promise<number> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -57,7 +57,8 @@ export class TurnService {
 
     return totalMilliseconds;
   }
-  async getWorkedHoursHistory(userId: number): Promise<{ date: string; totalTime: string }[]> {
+  
+  async getWorkedHoursHistory(userId: string): Promise<{ date: string; totalTime: string }[]> {
     const history: { [date: string]: number } = {};
   
     const userTurns = await Turn.findAll({
@@ -86,13 +87,13 @@ export class TurnService {
     return result as { date: string; totalTime: string }[];
   }
   
-
-  async getTurnDetailsByDate(userId: number, date: string): Promise<any[]> {
+  async getTurnDetailsByDate(userId: string, date: string): Promise<any[]> {
     const startOfDay = new Date(date);
-    const endOfDay = new Date(date);
-    startOfDay.setHours(0, 0, 0, 0);
-    endOfDay.setHours(23, 59, 59, 999);
+    startOfDay.setUTCHours(0, 0, 0, 0);
 
+    const endOfDay = new Date(date);
+    endOfDay.setUTCHours(23, 59, 59, 999);
+    
     const turns = await Turn.findAll({
       where: {
         userId,
@@ -101,9 +102,18 @@ export class TurnService {
       },
     });
 
+    console.log(turns)
+
     return turns.map((turn) => {
-      const startTime = turn.startTime.toISOString().substring(11, 16);
-      const endTime = turn.endTime ? turn.endTime.toISOString().substring(11, 16) : 'N/A';
+      const adjustedStartTime = new Date(turn.startTime);
+      adjustedStartTime.setHours(adjustedStartTime.getHours() - 3);
+      const startTime = adjustedStartTime.toISOString().substring(11, 16);
+
+      const adjustedEndTime = turn.endTime ? new Date(turn.endTime) : null;
+      const endTime = adjustedEndTime
+        ? (adjustedEndTime.setHours(adjustedEndTime.getHours() - 3), adjustedEndTime.toISOString().substring(11, 16))
+        : 'N/A';
+
       const diffInMs = turn.endTime ? this.calculateTimeDiff(turn.startTime, turn.endTime) : 0;
       const totalSeconds = diffInMs * 3600;
       const totalHours = Math.floor(totalSeconds / 3600);
@@ -114,7 +124,7 @@ export class TurnService {
     });
   }
 
-  public async getWorkedHoursToday(userId: number) {
+  public async getWorkedHoursToday(userId: string) {
     const today = new Date();
     
     const startOfDay = new Date(today);

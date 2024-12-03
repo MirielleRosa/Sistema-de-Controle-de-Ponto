@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Row, Col, Alert, Container, Modal } from 'react-bootstrap';
@@ -8,35 +7,39 @@ import HistoryTable from '../components/HistoryTable';
 import CustomNavbar from '../components/Navbar';
 
 const HistoryPage: React.FC = () => {
-  const { userId } = useParams();
+  const { userId } = useParams<{ userId: string }>(); 
   const [history, setHistory] = useState<{ date: string; totalTime: string }[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [modalShow, setModalShow] = useState(false);
   const [details, setDetails] = useState<{ startTime: string; endTime: string; totalTime: string }[]>([]);
 
   useEffect(() => {
+    if (userId){
     const fetchHistory = async () => {
-      try {
-        const response = await getWorkedHoursHistory(Number(userId));
-        setHistory(response.data);
-        setError(null);
-      } catch {
-        setError('Erro ao carregar histórico.');
-      } 
-    };
-    fetchHistory();
+        try {
+          const response = await getWorkedHoursHistory(userId);
+          setHistory(response.data);
+          setError(null);
+        } catch {
+          setError('Erro ao carregar histórico.');
+        } 
+      };
+      fetchHistory();
+      }
   }, [userId]);
 
   const handleViewDetails = async (date: string) => {
-    try {
-      const response = await getDetailsByDate(Number(userId), date);
-      setDetails(response.data);
-      setModalShow(true);
-      setError(null);
-    } catch {
-      setError('Erro ao carregar detalhes.');
-    } 
-  };
+    if (userId) {
+      try {
+        const response = await getDetailsByDate(userId, date);
+        setDetails(response.data);
+        setModalShow(true);
+        setError(null);
+      } catch {
+        setError('Erro ao carregar detalhes.');
+      } 
+    };
+    }
 
   return (
     <Row className="g-0">

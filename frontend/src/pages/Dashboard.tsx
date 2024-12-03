@@ -1,36 +1,41 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { Row, Col, Alert, Container, Table } from "react-bootstrap";
+import { Row, Col, Alert, Container } from "react-bootstrap";
 import {
   startTurn,
   endTurn,
   getTotalWorkedHours,
-  getWorkedHoursHistory,
   getWorkedHoursToday,
 } from "../services/api";
 import TimeDisplay from "../components/TimeDisplay";
 import TurnButton from "../components/TurnButton";
 import CustomNavbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
+import WorkedHoursTable from "../components/WorkedHoursTable";
 
 const Dashboard: React.FC = () => {
-  const { userId } = useParams();
-  const [turnId, setTurnId] = useState<number | null>(null);
+  const { userId } = useParams<{ userId: string }>(); // userId é uma string
+  const [turnId, setTurnId] = useState<number | null>(null); // turnId é um número ou null
   const [totalHours, setTotalHours] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
   const [startTime, setStartTime] = useState<number | null>(null);
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [workedHoursToday, setWorkedHoursToday] = useState<any[]>([]);
 
-  // Função para buscar dados do backend
-  const fetchData = async () => {
+  const updateLocalStorage = (key: string, value: string | null) => {
+    if (value) {
+      localStorage.setItem(key, value);
+    } else {
+      localStorage.removeItem(key);
+    }
+  };
+
+  const fetchData = async (userId: string) => {
     try {
       const [totalHoursResponse] = await Promise.all([
-        getTotalWorkedHours(Number(userId)),
-        getWorkedHoursHistory(Number(userId)),
+        getTotalWorkedHours(userId),
       ]);
-
-      const workedHoursResponse = await getWorkedHoursToday(Number(userId));
+      const workedHoursResponse = await getWorkedHoursToday(userId);
       setWorkedHoursToday(workedHoursResponse.data);
 
       const totalHours = totalHoursResponse.data.totalHours;
@@ -40,11 +45,17 @@ const Dashboard: React.FC = () => {
 
       if (localStorage.getItem("startTime") && localStorage.getItem("turnId")) {
         const restoredStartTime = Number(localStorage.getItem("startTime"));
-        const elapsed = Math.floor((now - restoredStartTime) / 1000);
 
-        setStartTime(restoredStartTime);
-        setTurnId(Number(localStorage.getItem("turnId")));
-        setElapsedTime(totalHours * 3600 + elapsed);
+        if (!isNaN(restoredStartTime) && restoredStartTime > 0) {
+          const elapsed = Math.floor((now - restoredStartTime) / 1000);
+          setStartTime(restoredStartTime);
+          setTurnId(Number(localStorage.getItem("turnId")));
+          setElapsedTime(totalHours * 3600 + elapsed);
+        } else {
+          localStorage.removeItem("startTime");
+          localStorage.removeItem("turnId");
+          setElapsedTime(totalHours * 3600);
+        }
       } else {
         setElapsedTime(totalHours * 3600);
       }
@@ -55,12 +66,13 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // Carregar dados iniciais ao montar o componente
   useEffect(() => {
-    fetchData();
+    if (userId) {
+      fetchData(userId);
+    }
   }, [userId]);
+  
 
-  // Atualizar o tempo decorrido enquanto o turno está ativo
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
@@ -77,93 +89,55 @@ const Dashboard: React.FC = () => {
   }, [startTime, totalHours]);
 
   const handleStartTurn = async () => {
-    if (userId) {
-      try {
-        const response = await startTurn(Number(userId));
-        const now = Date.now();
-  
-        setTurnId(response.data.id);
-        setStartTime(now);
-        updateLocalStorage("startTime", String(now));
-        updateLocalStorage("turnId", String(response.data.id));
-        setError(null);
-  
-        // Atualizar os dados após iniciar o turno
-        await fetchData();
-      } catch {
-        setError("Erro ao iniciar o turno.");
-      }
-    }
-  };
-  
-  // Finalizar um turno
-  const handleEndTurn = async () => {
-    if (turnId) {
-      try {
-        const now = Date.now();
-        const totalElapsedTime = Math.floor((now - (startTime || now)) / 1000);
+    if (!userId) return; 
 
-        await endTurn(turnId);
+   try {
+    const response = await startTurn(userId);
 
-        setElapsedTime(totalElapsedTime + totalHours * 3600);
-        setTotalHours((prev) => prev + totalElapsedTime / 3600);
-        setTurnId(null);
-        setStartTime(null);
+    if (response?.data?.startTime && response?.data?.id) {
+      const serverStartTime = new Date(response.data.startTime).getTime();
 
-        updateLocalStorage("startTime", null);
-        updateLocalStorage("turnId", null);
+      setTurnId(response.data.id);
+      setStartTime(serverStartTime);
+      updateLocalStorage("startTime", String(serverStartTime));
+      updateLocalStorage("turnId", String(response.data.id));
+      setError(null);
 
-        // Atualizar os dados após finalizar o turno
-        await fetchData();
-
-        setError(null);
-      } catch {
-        setError("Erro ao finalizar o turno.");
-      }
-    }
-  };
-
-  // Atualizar o localStorage
-  const updateLocalStorage = (key: string, value: string | null) => {
-    if (value) {
-      localStorage.setItem(key, value);
+      await fetchData(userId);
     } else {
-      localStorage.removeItem(key);
+      throw new Error("Dados inválidos recebidos do servidor.");
     }
-  };
+  } catch (error) {
+    console.error("Erro ao iniciar o turno:", error);
+    setError("Erro ao iniciar o turno.");
+  }
+};
 
-  // Formatar horário para exibição
-  const formatTime = (date: Date) => {
-    const hours = date.getHours().toString().padStart(2, "0");
-    const minutes = date.getMinutes().toString().padStart(2, "0");
-    return `${hours}h ${minutes}m`;
-  };
+const handleEndTurn = async () => {
+  if (turnId === null) return; // Certifique-se de que o turnId existe antes de prosseguir
 
-  // Renderizar tabela de horas trabalhadas
-  const renderWorkedHoursTable = () => {
-    const sortedData = workedHoursToday.sort(
-      (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
-    );
+  try {
+    const now = Date.now();
+    const totalElapsedTime = Math.floor((now - (startTime || now)) / 1000);
 
-    return (
-      <Table striped bordered hover>
-        <thead>
-          <tr>
-            <th>Entrada</th>
-            <th>Saída</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sortedData.map((item, index) => (
-            <tr key={index}>
-              <td>{formatTime(new Date(item.startTime))}</td>
-              <td>{item.endTime ? formatTime(new Date(item.endTime)) : "-"}</td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
-    );
-  };
+    await endTurn(String(turnId)); // Certifique-se de que turnId é passado como string
+
+    setElapsedTime(totalElapsedTime + totalHours * 3600);
+    setTotalHours((prev) => prev + totalElapsedTime / 3600);
+    setTurnId(null);
+    setStartTime(null);
+
+    updateLocalStorage("startTime", null);
+    updateLocalStorage("turnId", null);
+
+    await fetchData(userId);
+
+    setError(null);
+  } catch (error) {
+    console.error("Erro ao finalizar o turno:", error);
+    setError("Erro ao finalizar o turno.");
+  }
+};
 
   return (
     <Row className="g-0">
@@ -180,7 +154,7 @@ const Dashboard: React.FC = () => {
           {error && <Alert variant="danger">{error}</Alert>}
           <Row className="d-flex align-items-start">
             <h2 className="display-2 text-center text-md-start">Relógio de Ponto</h2>
-            <Col className="mx-auto mt-4">
+            <Col className="">
               <TimeDisplay elapsedTime={elapsedTime} />
               <div className="d-flex justify-content-center align-items-center mt-3">
                 <TurnButton
@@ -192,8 +166,7 @@ const Dashboard: React.FC = () => {
             </Col>
           </Row>
           <Row className="mt-4">
-            <h3>Horas Trabalhadas Hoje</h3>
-            {renderWorkedHoursTable()}
+          <WorkedHoursTable workedHoursToday={workedHoursToday} />
           </Row>
         </Container>
       </Col>

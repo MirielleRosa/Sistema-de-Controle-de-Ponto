@@ -6,7 +6,7 @@
     "dev": "ts-node-dev src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "test": "jest"
+    "test": "jest --detectOpenHandles"
   },
   "keywords": [],
   "author": "",
@@ -29,6 +29,7 @@
     "@types/dotenv": "^8.2.3",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.14",
+    "@types/mocha": "^10.0.10",
     "@types/pg": "^8.11.10",
     "@types/supertest": "^6.0.2",
     "babel-jest": "^29.7.0",
