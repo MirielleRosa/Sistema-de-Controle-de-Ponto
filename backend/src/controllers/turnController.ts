@@ -45,20 +45,14 @@ export class TurnController {
 
   public getTotalWorkedHours: RequestHandler = async ({ params: { userId } }: Request, res: Response): Promise<void> => {
     try {
-      // Garantir que userId seja tratado como string
-      if (typeof userId !== 'string') {
-        res.status(400).json({ error: 'User ID inválido' });
-        return; // Garantir que o retorno seja feito corretamente
-      }
-  
+      console.log("userId controller", userId)
+
       let totalHours = await this.turnService.getTotalWorkedHours(userId);
   
       totalHours = totalHours ?? 0;
   
-      // Enviando a resposta sem retornar nada, já que o tipo esperado é void
       res.status(200).json({ totalHours });
     } catch (error) {
-      // Caso haja erro, manipular a resposta sem retornar nada
       res.status(500).json({ error: 'Erro ao carregar total de horas trabalhadas' });
     }
   };

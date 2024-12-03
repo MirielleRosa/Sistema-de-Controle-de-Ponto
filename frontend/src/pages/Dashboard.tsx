@@ -32,9 +32,8 @@ const Dashboard: React.FC = () => {
 
   const fetchData = async (userId: string) => {
     try {
-      const [totalHoursResponse] = await Promise.all([
-        getTotalWorkedHours(userId),
-      ]);
+      console.log("userId", userId)
+      const [totalHoursResponse] = await Promise.all([getTotalWorkedHours(userId),]);
       const workedHoursResponse = await getWorkedHoursToday(userId);
       setWorkedHoursToday(workedHoursResponse.data);
 

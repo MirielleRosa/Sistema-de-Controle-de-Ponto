@@ -40,9 +40,11 @@ export class TurnService {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    console.log("user id service", userId)
+
     const userTurns = await Turn.findAll({
       where: {
-        userId: Sequelize.cast(userId, 'VARCHAR'), // Garantir que userId seja tratado como string
+        userId: userId.toString(), 
         endTime: { [Op.ne]: null },
         startTime: { [Op.gte]: today },
       },
