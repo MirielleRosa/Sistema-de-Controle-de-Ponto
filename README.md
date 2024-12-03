@@ -1,4 +1,4 @@
-# sistema de controle de pontos Ilumeo
+# Sistema de Controle de Pontos Ilumeo
 
 ## Descrição
 
