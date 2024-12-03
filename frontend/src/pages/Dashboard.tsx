@@ -88,15 +88,15 @@ const Dashboard: React.FC = () => {
   }, [startTime, totalHours]);
 
   const handleStartTurn = async () => {
-    if (!userId) return;  // Garante que userId não seja vazio
+    if (!userId) return;  
   
     try {
-      const response = await startTurn(userId);  // Passando userId como string
+      const response = await startTurn(userId);  
   
       if (response?.data?.startTime && response?.data?.id) {
         const serverStartTime = new Date(response.data.startTime).getTime();
   
-        setTurnId(Number(response.data.id));  // Garantir que turnId é um número
+        setTurnId(Number(response.data.id));  
         setStartTime(serverStartTime);
         updateLocalStorage("startTime", String(serverStartTime));
         updateLocalStorage("turnId", String(response.data.id));
@@ -113,7 +113,7 @@ const Dashboard: React.FC = () => {
   };
   
   const handleEndTurn = async () => {
-    if (turnId === null || !userId) return; // Garante que userId e turnId estão definidos
+    if (turnId === null || !userId) return; 
   
     try {
       const now = Date.now();
