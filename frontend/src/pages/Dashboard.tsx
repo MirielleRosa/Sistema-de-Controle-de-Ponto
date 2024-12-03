@@ -14,8 +14,13 @@ import Sidebar from "../components/Sidebar";
 import WorkedHoursTable from "../components/WorkedHoursTable";
 
 const Dashboard: React.FC = () => {
-  const { userId } = useParams<{ userId: string }>(); // userId é uma string
-  const [turnId, setTurnId] = useState<number | null>(null); // turnId é um número ou null
+  const { userId } = useParams<{ userId: string }>();
+
+  console.log(userId);  // Verifique o valor aqui
+
+
+  
+  const [turnId, setTurnId] = useState<number | null>(null); 
   const [totalHours, setTotalHours] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
   const [startTime, setStartTime] = useState<number | null>(null);
@@ -114,29 +119,31 @@ const Dashboard: React.FC = () => {
 };
 
 const handleEndTurn = async () => {
-  if (turnId === null) return; // Certifique-se de que o turnId existe antes de prosseguir
+  if (turnId === null) return; 
 
-  try {
-    const now = Date.now();
-    const totalElapsedTime = Math.floor((now - (startTime || now)) / 1000);
-
-    await endTurn(String(turnId)); // Certifique-se de que turnId é passado como string
-
-    setElapsedTime(totalElapsedTime + totalHours * 3600);
-    setTotalHours((prev) => prev + totalElapsedTime / 3600);
-    setTurnId(null);
-    setStartTime(null);
-
-    updateLocalStorage("startTime", null);
-    updateLocalStorage("turnId", null);
-
-    await fetchData(userId);
-
-    setError(null);
-  } catch (error) {
-    console.error("Erro ao finalizar o turno:", error);
-    setError("Erro ao finalizar o turno.");
+  if(userId) {
+    try {
+      const now = Date.now();
+      const totalElapsedTime = Math.floor((now - (startTime || now)) / 1000);
+  
+      await endTurn(String(turnId)); 
+      setElapsedTime(totalElapsedTime + totalHours * 3600);
+      setTotalHours((prev) => prev + totalElapsedTime / 3600);
+      setTurnId(null);
+      setStartTime(null);
+  
+      updateLocalStorage("startTime", null);
+      updateLocalStorage("turnId", null);
+  
+      await fetchData(userId);
+  
+      setError(null);
+    } catch (error) {
+      console.error("Erro ao finalizar o turno:", error);
+      setError("Erro ao finalizar o turno.");
+    }
   }
+
 };
 
   return (

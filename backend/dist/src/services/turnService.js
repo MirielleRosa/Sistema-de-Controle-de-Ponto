@@ -92,9 +92,9 @@ class TurnService {
     getTurnDetailsByDate(userId, date) {
         return __awaiter(this, void 0, void 0, function* () {
             const startOfDay = new Date(date);
+            startOfDay.setUTCHours(0, 0, 0, 0);
             const endOfDay = new Date(date);
-            startOfDay.setHours(0, 0, 0, 0);
-            endOfDay.setHours(23, 59, 59, 999);
+            endOfDay.setUTCHours(23, 59, 59, 999);
             const turns = yield turn_1.default.findAll({
                 where: {
                     userId,
@@ -102,12 +102,11 @@ class TurnService {
                     endTime: { [sequelize_1.Op.lte]: endOfDay },
                 },
             });
+            console.log(turns);
             return turns.map((turn) => {
-                // Converter startTime para o fuso horário local (UTC-3)
                 const adjustedStartTime = new Date(turn.startTime);
-                adjustedStartTime.setHours(adjustedStartTime.getHours() - 3); // Subtrair 3 horas
+                adjustedStartTime.setHours(adjustedStartTime.getHours() - 3);
                 const startTime = adjustedStartTime.toISOString().substring(11, 16);
-                // Converter endTime para o fuso horário local (UTC-3) se houver
                 const adjustedEndTime = turn.endTime ? new Date(turn.endTime) : null;
                 const endTime = adjustedEndTime
                     ? (adjustedEndTime.setHours(adjustedEndTime.getHours() - 3), adjustedEndTime.toISOString().substring(11, 16))
