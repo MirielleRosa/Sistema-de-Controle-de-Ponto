@@ -2,9 +2,8 @@
 
 ## Descrição
 
-Este projeto cfoi feito uma aplicação de controle de ponto desenvolvida em Node.js e React usando TypeScript. A aplicação permite o registro de entrada e saída, simulando a entrada e saída de colaboradores em uma empresa. Ela também lista a quantidade de horas trabalhadas em dias como histórico e possui uma tabela que exibe o histórico de registros do dia.
-
-Se o ID ou matrícula existir, os dados serão obtidos corretamente; caso contrário, serão criados. Caso não exista ele cria uma nova matrícula.
+Este projeto consiste em uma aplicação de controle de ponto, desenvolvida com Node.js e React, utilizando TypeScript. A aplicação permite registrar as entradas e saídas dos colaboradores, simulando o controle de ponto de uma empresa. Além disso, exibe o histórico das horas trabalhadas por dia e apresenta uma tabela com os registros do dia.
+Quando um ID ou matrícula já existe, os dados são recuperados corretamente; caso contrário, uma nova matrícula é criada automaticamente.
 
 ## Funcionalidades
 
@@ -36,28 +35,25 @@ Se o ID ou matrícula existir, os dados serão obtidos corretamente; caso contr�
 - Docker
 
 ## Deploy
+O deployment do backend da aplicação foi realizado no Render, enquanto o frontend está hospedado no Vercel.
 
-O deploy do backend da aplicação foi realizado no Render e o frontend, está no Vercel.
+Importante: devido ao uso dos planos gratuitos tanto no Render quanto no Vercel, o servidor entra em stand-by e é ativado apenas com a primeira requisição. Por esse motivo, as ações iniciais na aplicação podem apresentar um tempo de resposta mais longo do que o habitual.
 
-Importante: Devido ao uso do plano gratuito no Render e Vercel, o servidor fica em stand by e só é ativado com a primeira requisição. Portanto, as ações iniciais na aplicação podem demorar mais do que o habitual.
+- Frontend: https://sistema-de-controle-de-ponto-git-main-mirielle-rosas-projects.vercel.app/
 
-Frontend: https://sistema-de-controle-de-ponto-git-main-mirielle-rosas-projects.vercel.app/
-
-
-Protótipo no Figma: https://www.figma.com/design/oyQxyfaAoyvYhdRIAt9CK9/Prot%C3%B3tipo-Poto-Ilumeo?node-id=0-1&m=dev&t=FvwSYBYyxvz5mDII-1
+- Protótipo no Figma: https://www.figma.com/design/oyQxyfaAoyvYhdRIAt9CK9/Prot%C3%B3tipo-Poto-Ilumeo?node-id=0-1&m=dev&t=FvwSYBYyxvz5mDII-1
 
 # Configuração do projeto
 
 ## Backend
-
-Entre no diretório do backend
+Acesse o diretório do backend:
 
 ```
     cd .\backend\
 ```
 
 ### Docker:
-
+Para iniciar a aplicação com Docker, execute o comando:
 ```
     docker-compose up
 ```
@@ -66,34 +62,33 @@ Entre no diretório do backend
 
 1. **Instale as dependências**:
 
-   Execute o seguinte comando para instalar as dependências necessárias:
+Execute o seguinte comando para instalar as dependências necessárias:
 
 ```
    npm install
 ```
 
 2. **Construa a aplicação**:
-
+Para compilar a aplicação, use o comando:
 ```
   npm run build
 ```
 
 3. **Inicie a aplicação**:
-
+Para iniciar a aplicação, execute o comando:
 ```
 npm start
 ```
 
 
 ## Frontend
-Entre no diretório do Frontend
-
+Acesse o diretório do frontend:
 ```
     cd .\frontend\
 ```
 
 ### Docker:
-
+Para iniciar a aplicação com Docker, execute o comando:
 ```
     docker-compose up
 ```
@@ -102,13 +97,13 @@ Entre no diretório do Frontend
 
 
 1. **Instale as dependências**:
-
+Execute o comando abaixo para instalar as dependências necessárias:
 ```
   npm install
 ```
 
 2. **Inicie a aplicação**:
-
+Para iniciar a aplicação, use o comando:
 ```
 npx vite
 ```
