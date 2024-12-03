@@ -46,7 +46,6 @@ Frontend: https://sistema-de-controle-de-ponto-git-main-mirielle-rosas-projects.
 
 Protótipo no Figma: https://www.figma.com/design/oyQxyfaAoyvYhdRIAt9CK9/Prot%C3%B3tipo-Poto-Ilumeo?node-id=0-1&m=dev&t=FvwSYBYyxvz5mDII-1
 
-
 # Configuração do projeto
 
 ## Backend
