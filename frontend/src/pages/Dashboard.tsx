@@ -15,11 +15,6 @@ import WorkedHoursTable from "../components/WorkedHoursTable";
 
 const Dashboard: React.FC = () => {
   const { userId } = useParams<{ userId: string }>();
-
-  console.log(userId);  // Verifique o valor aqui
-
-
-  
   const [turnId, setTurnId] = useState<number | null>(null); 
   const [totalHours, setTotalHours] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
@@ -94,8 +89,6 @@ const Dashboard: React.FC = () => {
   }, [startTime, totalHours]);
 
   const handleStartTurn = async () => {
-    if (!userId) return; 
-
    try {
     const response = await startTurn(userId);
 
