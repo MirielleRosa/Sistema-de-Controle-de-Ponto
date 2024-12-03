@@ -119,7 +119,7 @@ const Dashboard: React.FC = () => {
       const now = Date.now();
       const totalElapsedTime = Math.floor((now - (startTime || now)) / 1000);
   
-      await endTurn(turnId);  // Passando turnId como número
+      await endTurn(turnId); 
       setElapsedTime(totalElapsedTime + totalHours * 3600);
       setTotalHours((prev) => prev + totalElapsedTime / 3600);
       setTurnId(null);
@@ -128,7 +128,7 @@ const Dashboard: React.FC = () => {
       updateLocalStorage("startTime", null);
       updateLocalStorage("turnId", null);
   
-      await fetchData(userId);  // Passando userId como string
+      await fetchData(userId); 
   
       setError(null);
     } catch (error) {

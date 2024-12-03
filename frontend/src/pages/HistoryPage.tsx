@@ -54,7 +54,7 @@ const HistoryPage: React.FC = () => {
     <Col sm={12} md={10} className="p-4 d-flex justify-content-center">
         <Container>
           {error && <Alert variant="danger">{error}</Alert>}
-          <h1 className='display-2'>Dias Anteriores</h1>
+          <h1 className='display-2'>Histórico</h1>
           <HistoryTable history={history} onViewDetails={handleViewDetails} />
         </Container>
       </Col>
