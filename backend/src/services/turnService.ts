@@ -1,7 +1,12 @@
+import Turn from '../models/turn'; 
 import { Op } from 'sequelize';
-import Turn from '../models/turn';
+import { Turn as TurnInterface } from '../interfaces/Turn';
 
 export class TurnService {
+  private calculateTimeDiff(startTime: Date, endTime: Date): number {
+    return (endTime.getTime() - startTime.getTime()) / 3600000; // Retorna em horas
+  }
+
   public async startTurn(userId: number) {
     const turn = await Turn.create({
       userId,
@@ -31,105 +36,60 @@ export class TurnService {
     return turn;
   }
 
-  public async getTotalWorkedHours(userId: number) {
+  async getTotalWorkedHours(userId: number): Promise<number> {
     const today = new Date();
-    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
-    const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+    today.setHours(0, 0, 0, 0);
 
-    const startTime = startOfDay.toISOString();
-    const endTime = endOfDay.toISOString();
-
-    const turns = await Turn.findAll({
+    const userTurns = await Turn.findAll({
       where: {
         userId,
-        startTime: { [Op.gte]: startTime },
-        endTime: { [Op.lte]: endTime }
-      }
+        endTime: { [Op.ne]: null },
+        startTime: { [Op.gte]: today },
+      },
     });
 
-    if (!turns.length) {
-      return 0;
-    }
+    console.log(userTurns)
 
-    const totalMilliseconds = turns.reduce((acc, turn) => {
-      if (turn.endTime && turn.startTime) {
-        const diffInMs = turn.endTime.getTime() - turn.startTime.getTime();
-
-        if (diffInMs < 0) return acc;
-
-        return acc + diffInMs;
-      }
-      return acc;
+    const totalMilliseconds = userTurns.reduce((acc, turn) => {
+      const diffInMs = this.calculateTimeDiff(turn.startTime, turn.endTime!);
+      return acc + diffInMs;
     }, 0);
 
-    const totalHours = totalMilliseconds / 3600000;
-
-    return totalHours > 0 ? totalHours : 0;
+    return totalMilliseconds;
   }
-
-  public async getWorkedHoursHistory(userId: number) {
-    const today = new Date();
-    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
-
-    const turns = await Turn.findAll({
-      where: {
-        userId,
-        endTime: { [Op.lt]: startOfDay }
-      }
+  async getWorkedHoursHistory(userId: number): Promise<{ date: string; totalTime: string }[]> {
+    const history: { [date: string]: number } = {};
+  
+    const userTurns = await Turn.findAll({
+      where: { userId, endTime: { [Op.ne]: null } },
     });
-
-    if (!turns.length) {
-      return [];
-    }
-
-    const history = turns.reduce((acc: any[], turn) => {
-      const dateKey = turn.startTime.toISOString().split('T')[0];
-      const existingEntry = acc.find(entry => entry.date === dateKey);
-
-      const diffInMs = turn.endTime ? turn.endTime.getTime() - turn.startTime.getTime() : 0;
-      const totalSeconds = diffInMs / 1000;
-
+  
+    userTurns.forEach((turn) => {
+      const dateKey = turn.startTime.toISOString().split('T')[0]; 
+      const diffInMs = this.calculateTimeDiff(turn.startTime, turn.endTime!);
+      history[dateKey] = (history[dateKey] || 0) + diffInMs;
+    });
+  
+    const result = Object.entries(history).map(([date, totalMs]) => {
+      const totalSeconds = totalMs * 3600;
       const totalHours = Math.floor(totalSeconds / 3600);
       const totalMinutes = Math.floor((totalSeconds % 3600) / 60);
-      const totalSecondsFormatted = Math.floor(totalSeconds % 60);
-
-      const formattedTime = `${String(totalHours).padStart(2, '0')}:${String(totalMinutes).padStart(2, '0')}:${String(totalSecondsFormatted).padStart(2, '0')}`;
-
-      if (existingEntry) {
-        existingEntry.totalTime = this.addTime(existingEntry.totalTime, formattedTime);
-      } else {
-        acc.push({
-          date: dateKey,
-          totalTime: formattedTime
-        });
+  
+      if (totalHours > 0) {
+        const totalTime = `${String(totalHours).padStart(2, '0')}:${String(totalMinutes).padStart(2, '0')}`;
+        return { date, totalTime };
       }
-
-      return acc;
-    }, []);
-
-    return history;
+  
+      return null;
+    }).filter(item => item !== null);
+  
+    return result as { date: string; totalTime: string }[];
   }
+  
 
-  private addTime(existingTime: string, newTime: string): string {
-    const [existingHours, existingMinutes, existingSeconds] = existingTime.split(':').map(Number);
-    const [newHours, newMinutes, newSeconds] = newTime.split(':').map(Number);
-
-    let totalSeconds = existingSeconds + newSeconds;
-    let totalMinutes = existingMinutes + newMinutes + Math.floor(totalSeconds / 60);
-    let totalHours = existingHours + newHours + Math.floor(totalMinutes / 60);
-
-    totalSeconds %= 60;
-    totalMinutes %= 60;
-    totalHours %= 24;
-
-    return `${String(totalHours).padStart(2, '0')}:${String(totalMinutes).padStart(2, '0')}:${String(totalSeconds).padStart(2, '0')}`;
-  }
-
-  public async getTurnDetailsByDate(userId: number, date: string) {
-    console.log('UserID:', userId, 'Date:', date);
-
-    const startOfDay = new Date(date.replace(/-/g, '/'));
-    const endOfDay = new Date(date.replace(/-/g, '/'));
+  async getTurnDetailsByDate(userId: number, date: string): Promise<any[]> {
+    const startOfDay = new Date(date);
+    const endOfDay = new Date(date);
     startOfDay.setHours(0, 0, 0, 0);
     endOfDay.setHours(23, 59, 59, 999);
 
@@ -137,27 +97,62 @@ export class TurnService {
       where: {
         userId,
         startTime: { [Op.gte]: startOfDay },
-        endTime: { [Op.lte]: endOfDay }
-      }
+        endTime: { [Op.lte]: endOfDay },
+      },
     });
 
-    const formattedTurns = turns.map((turn) => {
+    return turns.map((turn) => {
       const startTime = turn.startTime.toISOString().substring(11, 16);
       const endTime = turn.endTime ? turn.endTime.toISOString().substring(11, 16) : 'N/A';
-
-      const diffInMs = turn.endTime ? turn.endTime.getTime() - turn.startTime.getTime() : 0;
-      const totalSeconds = diffInMs / 1000;
+      const diffInMs = turn.endTime ? this.calculateTimeDiff(turn.startTime, turn.endTime) : 0;
+      const totalSeconds = diffInMs * 3600;
       const totalHours = Math.floor(totalSeconds / 3600);
       const totalMinutes = Math.floor((totalSeconds % 3600) / 60);
       const totalTime = `${String(totalHours).padStart(2, '0')}:${String(totalMinutes).padStart(2, '0')}`;
 
+      return { startTime, endTime, totalTime };
+    });
+  }
+
+  public async getWorkedHoursToday(userId: number) {
+    const today = new Date();
+    
+    const startOfDay = new Date(today);
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    const endOfDay = new Date(today);
+    endOfDay.setHours(23, 59, 59, 999);
+  
+    const offset = 3 * 60; 
+    const startOfDayLocal = new Date(startOfDay.getTime() - (startOfDay.getTimezoneOffset() * 60000) + (offset * 60000));
+    const endOfDayLocal = new Date(endOfDay.getTime() - (endOfDay.getTimezoneOffset() * 60000) + (offset * 60000));
+    
+    const turns = await Turn.findAll({
+      where: {
+        userId,
+        startTime: { [Op.gte]: startOfDayLocal },
+        [Op.or]: [
+          { endTime: { [Op.lte]: endOfDayLocal } },  
+          { endTime: null }                         
+        ]
+      }
+    });
+      
+    if (!turns.length) {
+      return [];
+    }
+  
+    return turns.map(turn => {
+      const startTime = turn.startTime; 
+      let endTime = turn.endTime;       
+
       return {
-        startTime,
-        endTime,
-        totalTime
+        startDate: startTime,  
+        startTime: startTime,  
+        endDate: endTime,     
+        endTime: endTime      
       };
     });
-
-    return formattedTurns;
   }
+
 }

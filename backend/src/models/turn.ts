@@ -1,7 +1,9 @@
+// models/Turn.ts
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../config/database';
+import { Turn as TurnInterface } from '../interfaces/Turn';
 
-class Turn extends Model {
+class Turn extends Model<TurnInterface> implements TurnInterface {
   public id!: number;
   public userId!: number;
   public startTime!: Date;
@@ -25,7 +27,7 @@ Turn.init(
     },
     totalHours: {
       type: DataTypes.FLOAT,
-      allowNull: true,  
+      allowNull: true,
     },
   },
   {

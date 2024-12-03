@@ -1,14 +1,11 @@
+// HistoryTable.tsx
+import React from 'react';
 import { IoMdEye } from 'react-icons/io';
 
 interface HistoryTableProps {
-  history: { date: string; totalTime: string }[]; 
+  history: { date: string; totalTime: string }[];
   onViewDetails: (date: string, totalTime: string) => void;
 }
-
-const formatTime = (totalTime: string): string => {
-  const [hours, minutes] = totalTime.split(':');
-  return `${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m`;
-};
 
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
@@ -19,7 +16,6 @@ const formatDate = (dateString: string): string => {
 };
 
 const HistoryTable: React.FC<HistoryTableProps> = ({ history, onViewDetails }) => {
-
   return (
     <>
       {history.length > 0 ? (
@@ -37,9 +33,8 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ history, onViewDetails }) =
                 <tbody>
                   {history.map((entry, index) => (
                     <tr key={index} style={{ border: 'none' }}>
-                      <td className="table-header-tr" style={{ color: '#454B54' }}>{formatDate(entry.date)}</td>
                       <td className="table-header-tr" style={{ color: '#454B54' }}>
-                        {formatTime(entry.totalTime)}
+                        {formatDate(entry.date)}
                       </td>
                       <td className="table-header-tr" style={{ color: '#454B54' }}>
                         <IoMdEye className="fs-3"

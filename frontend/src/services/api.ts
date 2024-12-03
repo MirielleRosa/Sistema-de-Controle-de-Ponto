@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8080/api', 
+  // baseURL: 'http://localhost:8080/api', 
+  baseURL: 'https://sistema-de-controle-de-ponto-ilumeo.onrender.com/api', 
   withCredentials: false,
   headers: {
     'Content-Type': 'application/json',
@@ -27,5 +28,10 @@ export const getWorkedHoursHistory = async (userId: number) => {
 export const getDetailsByDate = async (userId: number, date: string) => {
   return await api.get(`/turn-details/${userId}/${date}`);
 };
+
+export const getWorkedHoursToday = async (userId: number) => {
+  return await api.get(`/hours-today/${userId}`);
+};
+
 
 export default api;
