@@ -16,7 +16,17 @@ const LoginPage: React.FC = () => {
       return;
     }
 
+    setError(null);
     navigate(`/${userId}`);
+  };
+
+  const handleInputChange = (value: string) => {
+    if (/^\d*$/.test(value)) {
+      setUserId(value); 
+      setError(null); 
+    } else {
+      setError('Digite apenas números inteiros.');
+    }
   };
 
   return (
@@ -47,8 +57,8 @@ const LoginPage: React.FC = () => {
                 <Form.Control
                   type="text"
                   value={userId}
-                  onChange={(e) => setUserId(e.target.value)}
-                  placeholder="4SXXFMf"
+                  onChange={(e) => handleInputChange(e.target.value)}
+                  placeholder="Digite apenas números"
                   required
                   className="custom-placeholder"
                 />

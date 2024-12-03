@@ -44,7 +44,7 @@ export class TurnService {
 
     const userTurns = await Turn.findAll({
       where: {
-        userId: userId.toString(), 
+        userId: userId, 
         endTime: { [Op.ne]: null },
         startTime: { [Op.gte]: today },
       },
