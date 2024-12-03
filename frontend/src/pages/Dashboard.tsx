@@ -89,39 +89,38 @@ const Dashboard: React.FC = () => {
   }, [startTime, totalHours]);
 
   const handleStartTurn = async () => {
-    if (!userId) return; 
-
-   try {
-    const response = await startTurn(userId);
-
-    if (response?.data?.startTime && response?.data?.id) {
-      const serverStartTime = new Date(response.data.startTime).getTime();
-
-      setTurnId(response.data.id);
-      setStartTime(serverStartTime);
-      updateLocalStorage("startTime", String(serverStartTime));
-      updateLocalStorage("turnId", String(response.data.id));
-      setError(null);
-
-      await fetchData(userId);
-    } else {
-      throw new Error("Dados inválidos recebidos do servidor.");
+    if (!userId) return;  // Garante que userId não seja vazio
+  
+    try {
+      const response = await startTurn(userId);  // Passando userId como string
+  
+      if (response?.data?.startTime && response?.data?.id) {
+        const serverStartTime = new Date(response.data.startTime).getTime();
+  
+        setTurnId(Number(response.data.id));  // Garantir que turnId é um número
+        setStartTime(serverStartTime);
+        updateLocalStorage("startTime", String(serverStartTime));
+        updateLocalStorage("turnId", String(response.data.id));
+        setError(null);
+  
+        await fetchData(userId);
+      } else {
+        throw new Error("Dados inválidos recebidos do servidor.");
+      }
+    } catch (error) {
+      console.error("Erro ao iniciar o turno:", error);
+      setError("Erro ao iniciar o turno.");
     }
-  } catch (error) {
-    console.error("Erro ao iniciar o turno:", error);
-    setError("Erro ao iniciar o turno.");
-  }
-};
-
-const handleEndTurn = async () => {
-  if (turnId === null) return; 
-
-  if(userId) {
+  };
+  
+  const handleEndTurn = async () => {
+    if (turnId === null || !userId) return; // Garante que userId e turnId estão definidos
+  
     try {
       const now = Date.now();
       const totalElapsedTime = Math.floor((now - (startTime || now)) / 1000);
   
-      await endTurn(turnId); 
+      await endTurn(turnId);  // Passando turnId como número
       setElapsedTime(totalElapsedTime + totalHours * 3600);
       setTotalHours((prev) => prev + totalElapsedTime / 3600);
       setTurnId(null);
@@ -130,16 +129,15 @@ const handleEndTurn = async () => {
       updateLocalStorage("startTime", null);
       updateLocalStorage("turnId", null);
   
-      await fetchData(userId);
+      await fetchData(userId);  // Passando userId como string
   
       setError(null);
     } catch (error) {
       console.error("Erro ao finalizar o turno:", error);
       setError("Erro ao finalizar o turno.");
     }
-  }
-
-};
+  };
+  
 
   return (
     <Row className="g-0">
